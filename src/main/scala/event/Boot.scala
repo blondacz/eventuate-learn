@@ -12,18 +12,21 @@ import scala.util.{Failure, Success}
 object Boot extends App {
 
 
-  val first = args(0) == "first"
+  val primary = args.headOption match {
+    case Some("primary") => true
+    case _ => false
+  }
 
   val firstPort: Int = 2252
   val secondPort: Int = 2253
 
-  val config = loadConfig(if (first) firstPort else secondPort)
+  val config = loadConfig(if (primary) firstPort else secondPort)
 
   implicit val system: ActorSystem = ActorSystem(ReplicationConnection.DefaultRemoteSystemName, config)
 
   println("Port is:" + config.getInt("akka.remote.netty.tcp.port"))
   println("Remote is:" + config.getString("akka.actor.provider"))
-  val initialization = if (first) startReplication("1", secondPort) else startReplication("2", firstPort)
+  val initialization = if (primary) startReplication("1", secondPort) else startReplication("2", firstPort)
 
   import system.dispatcher
 
@@ -33,7 +36,7 @@ object Boot extends App {
       system.terminate()
     case Success(eventLog) =>
       val manager = system.actorOf(Props(new ManagerActor("man", eventLog)), "manager")
-      val input = system.actorOf(Props(new InputReaderActor(manager, first)))
+      val input = system.actorOf(Props(new InputReaderActor(manager, primary)))
   }
 
 
