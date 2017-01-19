@@ -23,3 +23,11 @@ case class Cancelled(obRef : String) extends ObligationLifecycleEvent
 case class Hi(obRef: String)
 case class GetStatus()
 
+case class GetOffset()
+case class LastOffset(offset: Long)
+case class InitReading()
+case class AckReading()
+case class ReadingComplete()
+case class EventRead(offset : Long)
+
+
