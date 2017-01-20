@@ -16,9 +16,9 @@ class KafkaReaderActor(override val id: String,
   var offset : Long = 0L
 
   override def onCommand: Receive  = {
-    case GetOffset() => sender() ! LastOffset(offset)
-    case InitReading() => println(s"Initializing reading")
-      sender ! AckReading()
+    case GetOffset => sender() ! LastOffset(offset)
+    case InitReading => println(s"Initializing reading")
+      sender ! AckReading
     case e: CommittableMessage[String, String] =>
       offset = e.record.offset()
       val value: String = e.record.value()
@@ -32,7 +32,7 @@ class KafkaReaderActor(override val id: String,
         case Success(evt) =>
           // success reply
           manager ! command
-          sender() ! AckReading()
+          sender() ! AckReading
         case _ => println("failed to save event")
       }
   }

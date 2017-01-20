@@ -12,13 +12,13 @@ class ManagerActor(override val id : String,
 
   override def onCommand: Receive = {
     case Hi(obRef) => actors += (obRef -> sender())
-    case GetStatus() => println("Manager:" + actors)
+    case GetStatus => println("Manager:" + actors)
       actors.foreach {
-        case (_,ref) => ref ! GetStatus()
+        case (_,ref) => ref ! GetStatus
       }
     case ContractualObligationCreated(obRef, quantity) => findActor(obRef) ! Instruct(quantity)
     case ContractualObligationAmended(obRef, quantity) => findActor(obRef) ! Amend(quantity)
-    case ContractualObligationCancelled(obRef) => findActor(obRef) ! Cancel()
+    case ContractualObligationCancelled(obRef) => findActor(obRef) ! Cancel
   }
 
   override def onEvent: Receive = {

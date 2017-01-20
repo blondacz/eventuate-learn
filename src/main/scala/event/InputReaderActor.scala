@@ -22,8 +22,8 @@ class InputReaderActor(val manager: ActorRef, primary: Boolean) extends Actor {
   }
 
   private val queryProcessing: PartialFunction[List[String], Unit] = {
-    case StatusCmd :: Nil => context.actorSelection("../*") ! GetStatus()
-    case StatusCmd :: obRef :: Nil => context.actorSelection(s"/user/manager/$obRef") ! GetStatus()
+    case StatusCmd :: Nil => context.actorSelection("../*") ! GetStatus
+    case StatusCmd :: obRef :: Nil => context.actorSelection(s"/user/manager/$obRef") ! GetStatus
     case Nil =>
     case "" :: Nil =>
     case na :: nas => println(s"unknown command: $na $nas")

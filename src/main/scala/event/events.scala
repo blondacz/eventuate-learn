@@ -8,7 +8,7 @@ case class ContractualObligationAmended(obRef: String, quantity : BigDecimal)
 //commands
 case class Instruct(quantity : BigDecimal)
 case class Amend(quantity : BigDecimal)
-case class Cancel()
+case object Cancel
 
 //internal events
 trait ObligationLifecycleEvent {
@@ -21,13 +21,13 @@ case class Cancelled(obRef : String) extends ObligationLifecycleEvent
 
 //actor communication
 case class Hi(obRef: String)
-case class GetStatus()
+case object GetStatus
 
-case class GetOffset()
+case object GetOffset
 case class LastOffset(offset: Long)
-case class InitReading()
-case class AckReading()
-case class ReadingComplete()
+case object InitReading
+case object AckReading
+case object ReadingComplete
 case class EventRead(offset : Long)
 
 

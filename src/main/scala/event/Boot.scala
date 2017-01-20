@@ -59,7 +59,7 @@ object Boot extends App with AskSupport {
     val kafkaReader = system.actorOf(Props(new KafkaReaderActor("kfr", Some("kfr0"), eventLog, manager)))
     implicit val timeout = akka.util.Timeout(5 seconds)
 
-    (kafkaReader ? GetOffset()).mapTo[LastOffset].onSuccess {
+    (kafkaReader ? GetOffset).mapTo[LastOffset].onSuccess {
       case LastOffset(offset) =>
         val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
           .withBootstrapServers("localhost:6001")
@@ -67,7 +67,7 @@ object Boot extends App with AskSupport {
           .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
 
         Consumer.committableSource(consumerSettings, assignmentWithOffset(new TopicPartition("obligation-events", 0), offset))
-          .runWith(Sink.actorRefWithAck(kafkaReader, InitReading(), AckReading(), ReadingComplete()))
+          .runWith(Sink.actorRefWithAck(kafkaReader, InitReading, AckReading, ReadingComplete))
     }
   }
 
