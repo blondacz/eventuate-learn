@@ -18,3 +18,5 @@ libraryDependencies += "com.rbmhtechnology" %% "eventuate-adapter-stream" % "0.8
 // https://mvnrepository.com/artifact/net.manub/scalatest-embedded-kafka_2.11
 libraryDependencies += "net.manub" % "scalatest-embedded-kafka_2.11" % "0.11.0"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream-kafka" % "0.13"
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4"
+

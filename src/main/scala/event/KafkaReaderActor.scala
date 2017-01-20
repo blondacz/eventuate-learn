@@ -23,7 +23,9 @@ class KafkaReaderActor(override val id: String,
       offset = e.record.offset()
       val value: String = e.record.value()
       val command = value.split(" ").toList match {
-        case _ :: _ :: obRef :: ammount :: Nil => ContractualObligationCreated(obRef,BigDecimal(ammount))
+        case _ :: "created" :: obRef :: ammount :: Nil  => ContractualObligationCreated(obRef,BigDecimal(ammount))
+        case _ :: "amended" :: obRef :: ammount :: Nil  => ContractualObligationAmended(obRef,BigDecimal(ammount))
+        case _ :: "cancelled" :: obRef :: Nil  => ContractualObligationCancelled(obRef)
       }
       println(s"Message: ${e.record.offset()}/ $value")
       persist(EventRead(offset)) {
