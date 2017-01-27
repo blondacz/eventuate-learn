@@ -4,7 +4,7 @@
 		module="eventuate-learn-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20170110234638"
+		publication="20170119082018"
 		e:sbtVersion="0.13" e:scalaVersion="2.10"
 	>
 		<description>
