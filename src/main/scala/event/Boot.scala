@@ -2,17 +2,19 @@ package event
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.kafka.Subscriptions.assignmentWithOffset
-import akka.kafka.scaladsl.Consumer
-import akka.kafka.{ConsumerSettings, Subscriptions}
+import akka.kafka.scaladsl.{Consumer, Producer}
+import akka.kafka.{ConsumerSettings, ProducerMessage, ProducerSettings, Subscriptions}
 import akka.pattern.AskSupport
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{Sink, Source}
 import com.rbmhtechnology.eventuate._
+import com.rbmhtechnology.eventuate.adapter.stream.DurableEventSource
 import com.rbmhtechnology.eventuate.log.leveldb.LeveldbEventLog
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
+import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer, StringDeserializer, StringSerializer}
 
 import scala.concurrent.Future.successful
 import scala.util.{Failure, Success}
@@ -49,27 +51,14 @@ object Boot extends App with AskSupport {
     case Success(eventLog) =>
       val manager = system.actorOf(Props(new ManagerActor("man", eventLog)), "manager")
       val input = system.actorOf(Props(new InputReaderActor(manager, primary)))
-      if (!primary) {
-        readFromKafka(eventLog, manager)
+      if (primary) {
+        val kafkaReader = system.actorOf(Props(new KafkaReaderActor("kfr", Some("kfr0"), eventLog, manager)))
+        kafkaReader ! InitReading
+        val kafkaWriter = system.actorOf(Props(new KafkaWriterActor(eventLog)))
       }
   }
 
 
-  def readFromKafka(eventLog: ActorRef, manager: ActorRef): Unit = {
-    val kafkaReader = system.actorOf(Props(new KafkaReaderActor("kfr", Some("kfr0"), eventLog, manager)))
-    implicit val timeout = akka.util.Timeout(5 seconds)
-
-    (kafkaReader ? GetOffset).mapTo[LastOffset].onSuccess {
-      case LastOffset(offset) =>
-        val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
-          .withBootstrapServers("localhost:6001")
-          .withGroupId(s"system-$firstPort")
-          .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-
-        Consumer.committableSource(consumerSettings, assignmentWithOffset(new TopicPartition("obligation-events", 0), offset))
-          .runWith(Sink.actorRefWithAck(kafkaReader, InitReading, AckReading, ReadingComplete))
-    }
-  }
 
   def startReplication(rid: String, port: Int, recover: Boolean = false) = {
     val replicationEndpoint = new ReplicationEndpoint(id = rid, logNames = Set(ReplicationEndpoint.DefaultLogName),

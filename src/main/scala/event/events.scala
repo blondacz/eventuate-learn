@@ -26,6 +26,7 @@ case object GetStatus
 case object GetOffset
 case class LastOffset(offset: Long)
 case object InitReading
+case object StartedReading
 case object AckReading
 case object ReadingComplete
 case class EventRead(offset : Long)
