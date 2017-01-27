@@ -6,7 +6,7 @@ import scala.io.Source
 
 
 class InputReaderActor(val manager: ActorRef, primary: Boolean) extends Actor {
-  final val ObligationCmd = "ob"
+  final val ObligationCmd = "obligation"
   final val StatusCmd = "status"
 
   private val lines = Source.stdin.getLines
