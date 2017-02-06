@@ -25,7 +25,6 @@ case object GetStatus
 case object CaptureSnapshot
 
 case object GetOffset
-case class LastOffset(offset: Long)
 case object InitReading
 case object StartedReading
 case object AckReading

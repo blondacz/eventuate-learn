@@ -72,7 +72,10 @@ class KafkaWriterActor(eventLog: ActorRef) extends Actor {
     println(s"Starting writing to Kafka with offset: $offset")
 
     val source = Source.fromGraph(DurableEventSource(eventLog, fromSequenceNr = offset))
-    source.map { elem =>
+    source.filter(_.payload match {
+      case EventRead(_) => false
+      case _ => true
+    }).map { elem =>
       new ProducerRecord[String, String]("instruction-events", elem.localSequenceNr + "|" + elem.payload.toString)
     }.runWith(Producer.plainSink(producerSettings))
   }

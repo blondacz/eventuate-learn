@@ -38,7 +38,7 @@ TODO
 ------
 1. Serialization of the events using i.e. protobuf and show evolution of the events (use akka serialization and String Manifests)
 2. Change akka streams for reading and writting so they use batches
-3. Filter outbound events using akka streams
+3. ~~Filter outbound events using akka streams~~
 4. Plug in EventSourcedWriter that writes to external DB (Spring Boot Data Rest?)
 5. Expand model so it shows multiple actors in sequence i.e. instruction actors - (make sure the secondary system only maintains the state - use ConditionalRequest?)
 6. explored CRDTs
