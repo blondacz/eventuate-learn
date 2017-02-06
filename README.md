@@ -43,7 +43,7 @@ TODO
 5. Expand model so it shows multiple actors in sequence i.e. instruction actors - (make sure the secondary system only maintains the state - use ConditionalRequest?)
 6. explored CRDTs
 7. Try creating another actor system consuming filter replicated log
-8. explore snapshots
+8. ~~explore snapshots~~
 9. explore versioning
 10. explore event driven communication
 11. attach Kamon for monitoring
