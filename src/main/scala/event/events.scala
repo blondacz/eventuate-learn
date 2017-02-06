@@ -22,6 +22,7 @@ case class Cancelled(obRef : String) extends ObligationLifecycleEvent
 //actor communication
 case class Hi(obRef: String)
 case object GetStatus
+case object CaptureSnapshot
 
 case object GetOffset
 case class LastOffset(offset: Long)

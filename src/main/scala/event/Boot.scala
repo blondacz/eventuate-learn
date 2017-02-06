@@ -75,6 +75,8 @@ object Boot extends App with AskSupport {
     val myConfig = ConfigFactory.parseString(
       s"""
          |eventuate.log.leveldb.dir = "target/location-$port"
+         |eventuate.snapshot.filesystem.dir = "target/snapshots-$port"
+         |
          |akka {
          |kafka.consumer.kafka-clients {
          |  enable.auto.commit = true

@@ -18,7 +18,7 @@ Supported commands
 - `obligation created {obligation ref} {amount}` - obligation changes its state to InstructingStarted 
 - `obligation amended {obligation ref} {amount}` - obligation changes its state to Amended
 - `obligation cancelled {obligation ref} {amount}` - obligation changes its state to Cancelled
-
+- `snapshot` - snapshots state of all obligations to a target dir. On the restart all obligation actores restore their state from the snapshots
 
 
 Running tests

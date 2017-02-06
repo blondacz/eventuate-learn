@@ -1,6 +1,7 @@
 package event
 
 import akka.actor.{Actor, ActorRef}
+import com.rbmhtechnology.eventuate.EventsourcingProtocol.SaveSnapshot
 
 import scala.io.Source
 
@@ -8,6 +9,7 @@ import scala.io.Source
 class InputReaderActor(val manager: ActorRef, primary: Boolean) extends Actor {
   final val ObligationCmd = "obligation"
   final val StatusCmd = "status"
+  final val SnapshotCmd = "snapshot"
 
   private val lines = Source.stdin.getLines
 
@@ -22,6 +24,7 @@ class InputReaderActor(val manager: ActorRef, primary: Boolean) extends Actor {
   }
 
   private val queryProcessing: PartialFunction[List[String], Unit] = {
+    case SnapshotCmd :: Nil => context.actorSelection(s"/user/manager/**") ! CaptureSnapshot
     case StatusCmd :: Nil => context.actorSelection("../*") ! GetStatus
     case StatusCmd :: obRef :: Nil => context.actorSelection(s"/user/manager/$obRef") ! GetStatus
     case Nil =>
