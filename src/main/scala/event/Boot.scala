@@ -50,12 +50,14 @@ object Boot extends App with AskSupport {
       system.terminate()
     case Success(eventLog) =>
       val manager = system.actorOf(Props(new ManagerActor("man", eventLog)), "manager")
+      val snapshotManager = system.actorOf(Props[SnapshotManagerActor], "snapshot-manager")
       val input = system.actorOf(Props(new InputReaderActor(manager, primary)))
       if (primary) {
         val kafkaReader = system.actorOf(Props(new KafkaReaderActor("kfr", Some("kfr0"), eventLog, manager)))
         kafkaReader ! InitReading
         val kafkaWriter = system.actorOf(Props(new KafkaWriterActor(eventLog)))
       }
+      system.scheduler.schedule(1 minute,1 minute,snapshotManager,CaptureSnapshot)
   }
 
 

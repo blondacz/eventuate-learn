@@ -9,7 +9,6 @@ class ManagerActor(override val id : String,
                    override val eventLog: ActorRef) extends EventsourcedView {
   private var actors = mutable.Map[String, ActorRef]()
 
-
   override def onCommand: Receive = {
     case Hi(obRef) => actors += (obRef -> sender())
     case GetStatus => println("Manager:" + actors)
