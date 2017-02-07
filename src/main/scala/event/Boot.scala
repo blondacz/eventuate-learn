@@ -1,25 +1,16 @@
 package event
 
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.kafka.Subscriptions.assignmentWithOffset
-import akka.kafka.scaladsl.{Consumer, Producer}
-import akka.kafka.{ConsumerSettings, ProducerMessage, ProducerSettings, Subscriptions}
+import akka.actor.{ActorSystem, Props}
 import akka.pattern.AskSupport
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
 import com.rbmhtechnology.eventuate._
-import com.rbmhtechnology.eventuate.adapter.stream.DurableEventSource
 import com.rbmhtechnology.eventuate.log.leveldb.LeveldbEventLog
 import com.typesafe.config.ConfigFactory
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer, StringDeserializer, StringSerializer}
 
 import scala.concurrent.Future.successful
-import scala.util.{Failure, Success}
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.{Failure, Success}
 
 
 object Boot extends App with AskSupport {
@@ -57,9 +48,8 @@ object Boot extends App with AskSupport {
         kafkaReader ! InitReading
         val kafkaWriter = system.actorOf(Props(new KafkaWriterActor(eventLog)))
       }
-      system.scheduler.schedule(1 minute,1 minute,snapshotManager,CaptureSnapshot)
+      system.scheduler.schedule(1 minute, 1 minute, snapshotManager, CaptureSnapshot)
   }
-
 
 
   def startReplication(rid: String, port: Int, recover: Boolean = false) = {
@@ -80,11 +70,27 @@ object Boot extends App with AskSupport {
          |eventuate.snapshot.filesystem.dir = "target/snapshots-$port"
          |
          |akka {
+         |
+         |actor {
+         |  serializers {
+         |    domain-event-serializer = "event.CustomStringSerializer"
+         |    kryo = "com.twitter.chill.akka.AkkaSerializer"
+         |  }
+         |  provider = "akka.remote.RemoteActorRefProvider"
+         |
+         |  serialization-bindings {
+         |   "java.io.Serializable" = none
+         |    "event.EventRead" = domain-event-serializer
+         |    "scala.Product" = kryo
+         |  }
+         |}
+         |
+         |
          |kafka.consumer.kafka-clients {
          |  enable.auto.commit = true
          |  auto.commit.interval.ms = 10000
          |}
-         | actor.provider = "akka.remote.RemoteActorRefProvider"
+         |
          | remote {
          |  enabled-transports = ["akka.remote.netty.ssl"]
          |  netty.ssl{
