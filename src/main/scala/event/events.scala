@@ -1,5 +1,8 @@
 package event
 
+import akka.actor.ActorRef
+import com.rbmhtechnology.eventuate.SnapshotMetadata
+
 //external
 case class ContractualObligationCreated(obRef: String, quantity : BigDecimal)
 case class ContractualObligationCancelled(obRef: String)
@@ -22,7 +25,12 @@ case class Cancelled(obRef : String) extends ObligationLifecycleEvent
 //actor communication
 case class Hi(obRef: String)
 case object GetStatus
-case object CaptureSnapshot
+
+sealed trait Snapshotting
+case object CaptureSnapshot extends Snapshotting
+case class SnapshotSaveSuccess(metadata: SnapshotMetadata) extends Snapshotting
+case class SnapshotSaveFailure(aggregateId : Option[String] ,cause: Throwable) extends Snapshotting
+
 
 case object GetOffset
 case object InitReading

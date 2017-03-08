@@ -31,7 +31,7 @@ class KafkaWriterActor(eventLog: ActorRef) extends Actor {
       sender ! AckReading
       println("Working out offset")
     case e: CommittableMessage[String, String] =>
-      println("Received last message in Writer e.record.value()")
+      println(s"Received last message in Writer ${e.record.value()}")
       sender() ! ReadingComplete
       val offset = e.record.value().split("\\|").head
       startWritingToKafka(offset.toString.toLong + 1)

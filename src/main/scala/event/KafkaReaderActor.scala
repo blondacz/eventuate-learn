@@ -12,19 +12,26 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 
 class KafkaReaderActor(override val id: String,
                        override val aggregateId: Option[String],
                        override val eventLog: ActorRef,
-                       val manager: ActorRef) extends EventsourcedActor {
+                       val manager: ActorRef,
+                       primary: Boolean) extends EventsourcedActor {
 
-  var offset: Long = 0L
-
+  var offset : Long = 0L
 
   override def onCommand: Receive = {
-    case InitReading =>
+    case CaptureSnapshot =>
+      save(offset) {
+        case Success(metadata) =>
+          sender() ! SnapshotSaveSuccess(metadata)
+        case Failure(cause) =>
+          sender() ! SnapshotSaveFailure(aggregateId,cause)
+      }
+    case InitReading if primary =>
       readFromKafka()
     case StartedReading =>
       println(s"Initializing reading")
@@ -63,4 +70,9 @@ class KafkaReaderActor(override val id: String,
       .runWith(Sink.actorRefWithAck(context.self, StartedReading, AckReading, ReadingComplete))
   }
 
+  override def onSnapshot: Receive = {
+    case s : Long =>
+      println(s"$aggregateId Restoring from snapshot $s")
+      offset = s
+  }
 }
