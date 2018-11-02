@@ -13,7 +13,7 @@ class ManagerActor(override val id : String,
 
   override def onCommand: Receive = {
     case CaptureSnapshot =>
-      save(actors) {
+      save(actors.keys) {
         case Success(metadata) =>
           sender() ! SnapshotSaveSuccess(metadata)
         case Failure(cause) =>
@@ -41,9 +41,8 @@ class ManagerActor(override val id : String,
 
 
   override def onSnapshot: Receive = {
-    case s: mutable.Map[String, ActorRef] =>
+    case s: List[String] =>
       println(s"$aggregateId Restoring from snapshot $s")
-      actors = s
+      actors = mutable.Map[String, ActorRef](s.map(r => (r,createActor(r))) : _*)
   }
-
 }

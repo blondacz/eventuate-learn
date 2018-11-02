@@ -1,5 +1,5 @@
 <component name="libraryTable">
-  <library name="SBT: com.rbmhtechnology:eventuate-log-leveldb_2.11:0.8.1:jar">
+  <library name="sbt: com.rbmhtechnology:eventuate-log-leveldb_2.11:0.8.1:jar">
     <CLASSES>
       <root url="jar://$USER_HOME$/.ivy2/cache/com.rbmhtechnology/eventuate-log-leveldb_2.11/jars/eventuate-log-leveldb_2.11-0.8.1.jar!/" />
     </CLASSES>

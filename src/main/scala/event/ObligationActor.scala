@@ -10,6 +10,8 @@ class ObligationActor(override val id: String,
                       override val eventLog: ActorRef) extends EventsourcedActor {
   type ObligationState = (String, Map[BigDecimal, BigDecimal])
   private var state: ObligationState = ("New", Map(BigDecimal(0) -> 0))
+  private var lastQuieried: Option[ObligationState] = None
+  println(s" starting actor $id")
 
   override def onCommand: Receive = {
     case CaptureSnapshot =>
@@ -18,9 +20,15 @@ class ObligationActor(override val id: String,
         case Success(metadata) =>
           sender() ! SnapshotSaveSuccess(metadata)
         case Failure(cause) =>
-          sender() ! SnapshotSaveFailure(aggregateId,cause)
+          sender() ! SnapshotSaveFailure(aggregateId, cause)
       }
-    case GetStatus => println(s"Obligation: $id status: $state")
+    case GetStatus =>
+      if (!lastQuieried.contains(state))
+        println(s"Obligation: $id status: $state => ${lastQuieried.orNull}")
+      else
+        println(s"    Obligation: $id status: $state")
+      lastQuieried = Some(state)
+
     case Instruct(quantity) => persist(InstructingStarted(id, quantity)) { _ => }
     case Amend(quantity) => persist(Amended(id, quantity)) { _ => }
     case Cancel => persist(Cancelled(id)) { _ => }

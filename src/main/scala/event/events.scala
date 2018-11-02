@@ -25,6 +25,7 @@ case class Cancelled(obRef : String) extends ObligationLifecycleEvent
 //actor communication
 case class Hi(obRef: String)
 case object GetStatus
+case object GetStatusDiff
 
 sealed trait Snapshotting
 case object CaptureSnapshot extends Snapshotting

@@ -30,12 +30,12 @@ libraryDependencies += "com.twitter" % "chill-akka_2.11" % "0.9.1"
 
 
 libraryDependencies += "com.rbmhtechnology.eventuate-tools" %% "kamon-metrics" % "0.8.2"
-libraryDependencies +=  "io.kamon" %% "kamon-log-reporter" % "0.6.3"
-libraryDependencies +=  "io.kamon" %% "kamon-akka" % "0.6.3"
+//libraryDependencies +=  "io.kamon" %% "kamon-log-reporter" % "0.6.3"
+//libraryDependencies +=  "io.kamon" %% "kamon-akka" % "0.6.3"
 //libraryDependencies +=  "io.kamon" %% "kamon-system-metrics" % "0.6.3"
 libraryDependencies += "org.aspectj" % "aspectjweaver" % "1.8.10"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.1"
-libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.2.3"
+//libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.2.3"
 
 
 

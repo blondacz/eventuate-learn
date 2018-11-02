@@ -41,7 +41,7 @@ class KafkaWriterActor(eventLog: ActorRef) extends Actor {
 
   private val topic = new TopicPartition("instruction-events", 0)
 
-  def traceOffset(kafkaWriter: ActorRef) = {
+  private def traceOffset(kafkaWriter: ActorRef) = {
     val consumerSettings = ConsumerSettings(context.system, new StringDeserializer, new StringDeserializer)
       .withBootstrapServers("localhost:6001")
       .withGroupId(s"system-writter-trace")

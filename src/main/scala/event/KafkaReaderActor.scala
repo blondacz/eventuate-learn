@@ -44,7 +44,6 @@ class KafkaReaderActor(override val id: String,
         case _ :: "amended" :: obRef :: ammount :: Nil => ContractualObligationAmended(obRef, BigDecimal(ammount))
         case _ :: "cancelled" :: obRef :: Nil => ContractualObligationCancelled(obRef)
       }
-      println(s"Message: ${e.record.offset()}/ $value")
       persist(EventRead(offset)) {
         case Success(evt) =>
           // success reply
