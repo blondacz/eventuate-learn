@@ -1,17 +1,20 @@
 package event
 
-import akka.actor.ActorRef
-import com.rbmhtechnology.eventuate.{EventsourcedActor, SnapshotMetadata}
+import java.util
+
+import akka.actor.{ActorContext, ActorRef, Props}
+import com.rbmhtechnology.eventuate.EventsourcedActor
 
 import scala.util.{Failure, Success}
 
 class ObligationActor(override val id: String,
                       override val aggregateId: Option[String] = None,
-                      override val eventLog: ActorRef) extends EventsourcedActor {
-  type ObligationState = (String, Map[BigDecimal, BigDecimal])
-  private var state: ObligationState = ("New", Map(BigDecimal(0) -> 0))
-  private var lastQuieried: Option[ObligationState] = None
-  println(s" starting actor $id")
+                      override val eventLog: ActorRef) extends EventsourcedActor with ActorState[ObligationState] {
+  var state: ObligationState = ObligationState(id, "New", 1, List.empty, "0")
+
+  private var lastQueried: Option[ObligationState] = None
+  println(s" starting Obligation actor $id")
+
 
   override def onCommand: Receive = {
     case CaptureSnapshot =>
@@ -23,26 +26,47 @@ class ObligationActor(override val id: String,
           sender() ! SnapshotSaveFailure(aggregateId, cause)
       }
     case GetStatus =>
-      if (!lastQuieried.contains(state))
-        println(s"Obligation: $id status: $state => ${lastQuieried.orNull}")
+      if (!lastQueried.contains(state))
+        println(s"Obligation: $id status: $state => ${lastQueried.orNull}")
       else
         println(s"    Obligation: $id status: $state")
-      lastQuieried = Some(state)
+      lastQueried = Some(state)
+      context.children.foreach(_ ! GetStatus)
 
-    case Instruct(quantity) => persist(InstructingStarted(id, quantity)) { _ => }
+
+    case NewObligation(quantity) =>
+      val newId = generateInstructionId(state)
+      persist(NewInstructionCreated(id, newId, quantity),Set(newId)) { _ => }
     case Amend(quantity) => persist(Amended(id, quantity)) { _ => }
     case Cancel => persist(Cancelled(id)) { _ => }
   }
 
   override def onEvent: Receive = {
-    case InstructingStarted(_, quantity) => state = ("InstructingStarted", Map(state._2.values.head -> quantity))
-    case Amended(_, quantity) => state = ("Amended", Map(state._2.values.head -> quantity))
-    case Cancelled(_) => state = ("Cancelled", Map(state._2.values.head -> 0))
+    case NewInstructionCreated(_, instructionId, quantity) =>
+      createActor(instructionId)
+      state = state.instruct(quantity, instructionId)
+    case Amended(_, quantity) => state = state.amend(quantity)
+    case Cancelled(_) => state = state.cancel
   }
+
+  def createActor(instructionId: String): Unit = context.actorOf(Props(new InstructionActor(instructionId,Some(instructionId),eventLog) ), instructionId )
 
   override def onSnapshot: Receive = {
     case s: ObligationState =>
-      println(s"$aggregateId Restoring from snapshot $s")
+      println(s"$aggregateId Restoring obligation from snapshot $s")
       state = s
+      s.instructions.foreach(createActor)
   }
+
+  def generateInstructionId(state: ObligationState) : String = {
+    val newId = state.obRef  + "-" + (state.instructions.size + 1)
+    println(s" Generating new id $newId for $state ")
+    newId
+  }
+}
+
+case class ObligationState(obRef: String, state: String, version : Long, instructions: List[String], desc: String) {
+  def amend(quantity: BigDecimal) : ObligationState = copy(state = "Amended",version = version + 1, desc = quantity.toString)
+  def cancel : ObligationState = copy(state = "Cancelled",version = version + 1, desc = "")
+  def instruct(quantity: BigDecimal, instructionId: String) : ObligationState = copy(state = "InstructingStarted",version = version + 1, desc = quantity.toString, instructions = instructionId :: instructions)
 }

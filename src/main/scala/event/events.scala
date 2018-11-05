@@ -9,7 +9,7 @@ case class ContractualObligationCancelled(obRef: String)
 case class ContractualObligationAmended(obRef: String, quantity : BigDecimal)
 
 //commands
-case class Instruct(quantity : BigDecimal)
+case class NewObligation(quantity : BigDecimal)
 case class Amend(quantity : BigDecimal)
 case object Cancel
 
@@ -17,7 +17,7 @@ case object Cancel
 trait ObligationLifecycleEvent {
   def obRef : String
 }
-case class InstructingStarted(obRef : String, quantity : BigDecimal) extends ObligationLifecycleEvent
+case class NewInstructionCreated(obRef : String, instructionId: String,  quantity : BigDecimal) extends ObligationLifecycleEvent
 case class Amended(obRef : String, quantity : BigDecimal) extends ObligationLifecycleEvent
 case class Cancelled(obRef : String) extends ObligationLifecycleEvent
 

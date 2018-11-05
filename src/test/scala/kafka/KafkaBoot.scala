@@ -2,21 +2,27 @@ package kafka
 
 import net.manub.embeddedkafka.EmbeddedKafka
 import org.scalacheck.Gen
-import org.scalatest.FreeSpec
+import org.scalatest.{BeforeAndAfterAll, FreeSpec}
 
 import scala.concurrent.Future
 import scala.util.Try
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class KafkaBoot extends FreeSpec with EmbeddedKafka {
+class KafkaBoot extends FreeSpec with EmbeddedKafka with BeforeAndAfterAll {
+
+  private val messagePause = 5
+
+  override def beforeAll() {
+    EmbeddedKafka.start()
+  }
+
+  override def afterAll() {
+    EmbeddedKafka.stop()
+  }
 
   "runs kafka until killed" in {
-    EmbeddedKafka.start()
-
     readOutboundMessages("instruction-events")
     writeInboundMessages("obligation-events")
-
-    EmbeddedKafka.stop()
   }
 
   private def writeInboundMessages(inboundTopic: String): Unit = {
@@ -26,7 +32,7 @@ class KafkaBoot extends FreeSpec with EmbeddedKafka {
 
       publishStringMessageToKafka(inboundTopic, commandGen.sample.get)
       i += 1
-      Thread.sleep(1000)
+      Thread.sleep(messagePause * 1000)
     }
   }
 
@@ -36,8 +42,11 @@ class KafkaBoot extends FreeSpec with EmbeddedKafka {
     Future {
       while (true) {
         val msg = Try(consumeFirstStringMessageFrom(outboundTopic))
-        println(s"Received: $i / $msg")
-        i += 1
+        msg.map { m =>
+          println(s"Received: $i / $m")
+          i += 1
+        }.failed.foreach( "   No MSG on output because:" + _)
+
       }
     }
   }

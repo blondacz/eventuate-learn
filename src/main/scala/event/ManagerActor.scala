@@ -24,7 +24,7 @@ class ManagerActor(override val id : String,
       actors.foreach {
         case (_,ref) => ref ! GetStatus
       }
-    case ContractualObligationCreated(obRef, quantity) => findActor(obRef) ! Instruct(quantity)
+    case ContractualObligationCreated(obRef, quantity) => findActor(obRef) ! NewObligation(quantity)
     case ContractualObligationAmended(obRef, quantity) => findActor(obRef) ! Amend(quantity)
     case ContractualObligationCancelled(obRef) => findActor(obRef) ! Cancel
   }
